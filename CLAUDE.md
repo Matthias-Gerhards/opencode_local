@@ -25,6 +25,10 @@ Die Regeln in `AGENTS.md` (Upstream) gelten weiterhin; dieser Abschnitt ergänzt
   unbemerkt nach außen zu verbinden.
 - **Upstream-freundlich ändern:** Möglichst kleine, gezielte Eingriffe (Default ändern, Flag/Config
   auswerten, Feature abschalten) statt großer Umbauten, damit Merges von `origin/dev` machbar bleiben.
+- **Branches:** `dev` ist ein reiner Spiegel von Upstream (keine eigenen Commits). Alle Fork-Änderungen liegen
+  auf `local` (Default-Branch des Forks). Feature-Branches zweigen von `local` ab, PRs gehen nach `local` im Fork
+  `Matthias-Gerhards/opencode_local` – nie nach Upstream `anomalyco/opencode` (bei `gh pr create` immer
+  `--repo Matthias-Gerhards/opencode_local --base local` angeben). Details: `local-only/FORK-CHANGES.md`.
   Jede Fork-spezifische Stelle mit dem Kommentar `// local-only:` kurz begründen, damit sie bei
   Merges auffindbar ist (`grep -rn "local-only:"`).
 - **Protokollieren:** Jede Fork-Änderung bekommt einen Abschnitt in `local-only/FORK-CHANGES.md`
