@@ -102,6 +102,13 @@ Verlässlich abschotten lässt sich das nur über das Netz (Firewall, Proxy bzw.
 
 ## Fork aktualisieren
 
-Wenn eine neue opencode-Version übernommen wird, führt man danach im Repo-Root `local-only/check-fork.sh` aus.
+Der Fork hat zwei Haupt-Branches:
+
+- **`local`**: der Stand dieses Forks mit allen Änderungen. Diesen Branch baut und nutzt man.
+- **`dev`**: unverändertes opencode (Upstream). Er dient als Vergleichsbasis und wird nur mit Upstream
+  abgeglichen.
+
+Eine neue opencode-Version kommt per „Sync fork“ nach `dev` und wird dann in `local` gemergt. Danach führt man
+im Repo-Root `local-only/check-fork.sh` aus.
 Das Skript meldet, ob eine der Fork-Änderungen beim Merge verloren gegangen ist, und listet Internet-Adressen im
 Code auf, die neu dazugekommen sein könnten. Das genaue Vorgehen steht in [`FORK-CHANGES.md`](local-only/FORK-CHANGES.md).

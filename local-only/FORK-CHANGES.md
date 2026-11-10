@@ -15,25 +15,42 @@ actions (#62932)“). Nach jedem Release-Wechsel hier aktualisieren.
 
 ---
 
+## Branch-Modell
+
+| Branch | Inhalt | Regeln |
+| --- | --- | --- |
+| `dev` | reiner Spiegel von Upstream (`anomalyco/opencode`, Branch `dev`) | **keine eigenen Commits**. Nur per „Sync fork“ auf GitHub bzw. Pull von Upstream aktualisieren |
+| `local` | Upstream + alle Fork-Änderungen; Default-Branch des Forks | Fork-Änderungen kommen nur per PR oder Merge hinein |
+| Feature-Branches | einzelne Fork-Änderungen | von `local` abzweigen, PR nach `local` |
+
+PRs immer im Fork anlegen (`Matthias-Gerhards/opencode_local`, base `local`). GitHub schlägt bei Forks
+standardmäßig Upstream als Ziel vor. Ein solcher PR würde die Fork-Änderungen bei opencode einreichen.
+
+`git diff origin/dev origin/local` zeigt jederzeit genau die Fork-Änderungen.
+
 ## Vorgehen beim Release-Wechsel
 
 ```sh
+# 1. dev auf neuen Upstream-Stand bringen: GitHub → "Sync fork" auf dev, dann
 git fetch origin
-git switch -c local-<release> <fork-branch>      # Arbeitskopie, alter Stand bleibt erhalten
-git rebase origin/dev                             # oder: git merge origin/dev
+# 2. Upstream in einem Arbeitsbranch in local mergen, alter Stand bleibt erhalten
+git switch -c update-<release> origin/local
+git merge origin/dev
 #   Konflikte anhand der Abschnitte unten lösen (Abschnitt "Konflikt-Hinweise")
 bun install
 local-only/check-fork.sh                          # Marker + Verhalten + Restliste externer Hosts
+# 3. PR update-<release> → local (im Fork!), danach "Letzte Upstream-Basis" oben aktualisieren
 ```
 
-Empfehlung: **Rebase**, weil die Fork-Änderungen dann als kleine, nachvollziehbare Commits oben auf Upstream
-liegen. Ein Commit pro Bereich (siehe Abschnitte unten) – Konflikte bleiben so lokal.
+**Merge statt Rebase**, weil `local` gepusht und Default-Branch ist: Ein Rebase würde einen Force-Push auf
+`local` erfordern. Die Abschnitte unten beschreiben jede Änderung so, dass Konflikte trotzdem gezielt lösbar
+bleiben.
 
-Falls ein Rebase zu aufwendig wird, Änderungen auf frischem Upstream neu aufsetzen:
+Falls der Merge zu aufwendig wird, Änderungen auf frischem Upstream neu aufsetzen (Ergebnis per PR nach `local`):
 
 ```sh
-git switch -c local-<release> origin/dev
-git checkout <alter-fork-branch> -- local-only CLAUDE.md packages/tui/assets/tree-sitter \
+git switch -c update-<release> origin/dev
+git checkout origin/local -- local-only CLAUDE.md packages/tui/assets/tree-sitter \
   packages/tui/script/vendor-parsers.mjs packages/tui/script/parsers-languages.json \
   packages/tui/src/parsers-local.node.ts packages/tui/src/tree-sitter-assets.d.ts \
   packages/tui/test/util/parsers-local.test.ts
