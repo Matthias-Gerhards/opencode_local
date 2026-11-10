@@ -1,114 +1,113 @@
-# opencode lokal – was dieser Fork anders macht
+# opencode local – what this fork does differently
 
-Dieser Fork ist opencode, das ohne Internet läuft. Er ist für den Einsatz in einem Netz ohne Internetzugang
-gedacht: Modelle laufen auf einem eigenen Server (Ollama, LM Studio, vLLM, llama.cpp, …), und opencode baut keine
-Verbindung zu opencode.ai, GitHub, npm oder Cloud-Anbietern auf.
+This fork is opencode that runs without internet access. It is meant for networks with no internet connection:
+models run on your own server (Ollama, LM Studio, vLLM, llama.cpp, …), and opencode does not connect to
+opencode.ai, GitHub, npm or any cloud provider.
 
-Für die Bedienung selbst gilt die normale [README](README.md) von opencode. Hier steht nur, was anders ist und was
-man für den Betrieb wissen muss.
+For everyday use, the regular opencode [README](README.md) applies. This file only covers what is different and
+what you need to know to run it.
 
-> Technische Details zu jeder Änderung (für Merges mit Upstream): [`FORK-CHANGES.md`](local-only/FORK-CHANGES.md)
+> Technical details on every change (for merging with upstream): [`FORK-CHANGES.md`](local-only/FORK-CHANGES.md)
 
 ---
 
-## Was im Programm geändert ist
+## What is changed in the program
 
-Diese Punkte sind fest eingebaut und lassen sich nicht über die Config zurückdrehen.
+These changes are built in and cannot be reverted through the config.
 
-| Bereich | Upstream-Verhalten | In diesem Fork |
+| Area | Upstream behavior | In this fork |
 | --- | --- | --- |
-| **Modellkatalog** | lädt die Modellliste von `models.opencode.ai` | nutzt den mitgelieferten Katalog. Ein eigener Katalog geht per `OPENCODE_MODELS_PATH` (Datei) oder `OPENCODE_MODELS_URL` (lokaler Mirror) |
-| **ripgrep** (Dateisuche) | lädt `rg` bei Bedarf von GitHub herunter | lädt nichts. `rg` muss installiert sein, sonst gibt es eine klare Fehlermeldung |
-| **Syntax-Hervorhebung** im Terminal | lädt Grammatiken von GitHub | Grammatiken sind mitgeliefert. Sprachen, die nicht dabei sind, erscheinen ohne Farben |
-| **Websuche** | Modell darf im Web suchen (Exa sogar ohne API-Key) | **immer aus**. Suchanfragen könnten Code aus der Session nach außen tragen. Die Sperre ist einkompiliert und hat Vorrang vor jeder Config |
+| **Model catalog** | downloads the model list from `models.opencode.ai` | uses the bundled catalog. A custom catalog can be supplied via `OPENCODE_MODELS_PATH` (file) or `OPENCODE_MODELS_URL` (local mirror) |
+| **ripgrep** (file search) | downloads `rg` from GitHub when needed | downloads nothing. `rg` must be installed, otherwise you get a clear error message |
+| **Syntax highlighting** in the terminal | downloads grammars from GitHub | grammars are bundled. Languages that are not included are shown without colors |
+| **Web search** | the model may search the web (Exa even without an API key) | **always off**. Search queries could carry code from the session to the outside. The lock is compiled in and takes precedence over any config |
 
 ---
 
-## Was über die Config abgeschaltet wird
+## What is disabled through the config
 
-Die Datei [`opencode.jsonc`](local-only/opencode.jsonc) ist eine fertige Vorlage. Sie gehört nach
+The file [`opencode.jsonc`](local-only/opencode.jsonc) is a ready-made template. Place it at
 `~/.config/opencode/opencode.jsonc` (Windows: `%USERPROFILE%\.config\opencode\opencode.jsonc`).
 
-Sie schaltet ab bzw. legt fest:
+It disables or sets:
 
-- **Updates**: kein Update-Check (`"update": "disable"`)
-- **Teilen**: keine Session-Links über opencode.ai (`"share": "disabled"`)
-- **Formatter**: kein automatisches Nachladen von prettier & Co. aus npm (`"formatter": false`)
-- **webfetch**: Abrufe ins Internet verboten, nur `localhost`/`127.0.0.1` erlaubt. Bei Bedarf lässt sich
-  webfetch mit Rückfrage vor jedem Abruf freischalten (auskommentierte Zeilen in der Vorlage).
-- **Cloud-Provider und Konten** (OpenAI, Anthropic, Copilot, opencode Console, …): gesperrt
-- **Lokale Provider**: Ollama, LM Studio und ein Firmen-Server (`"firma"`) sind freigegeben
-- **Standardmodell**: fest vorgegeben, damit opencode nicht zufällig ein Modell ohne laufenden Server wählt
+- **Updates**: no update check (`"update": "disable"`)
+- **Sharing**: no session links via opencode.ai (`"share": "disabled"`)
+- **Formatters**: no automatic download of prettier & co. from npm (`"formatter": false`)
+- **webfetch**: requests to the internet are denied, only `localhost`/`127.0.0.1` are allowed. If needed, webfetch
+  can be enabled with a confirmation prompt before each request (commented-out lines in the template).
+- **Cloud providers and accounts** (OpenAI, Anthropic, Copilot, opencode Console, …): blocked
+- **Local providers**: Ollama, LM Studio and a company server (`"firma"`) are allowed
+- **Default model**: set explicitly so opencode does not pick a model whose server isn't running
 
-Diese Einstellungen kann jeder Anwender in seiner Config ändern. Fest eingebaut ist nur, was oben unter „Was im
-Programm geändert ist“ steht.
+Every user can change these settings in their own config. Only what is listed above under "What is changed in the
+program" is built in.
 
 ---
 
-## Einrichtung
+## Setup
 
-### 1. Config anpassen
+### 1. Adjust the config
 
 In `opencode.jsonc`:
 
-1. Beim Provider `"firma"` die Adresse des eigenen LLM-Servers eintragen (`"baseURL"`) und unter `"models"` die
-   Modell-ID so, wie der Server sie unter `<baseURL>/models` meldet.
-2. `"model"` auf `"firma/<modell-id>"` setzen.
-3. Nicht genutzte lokale Provider (Ollama, LM Studio) unter `"policies"` und `"providers"` entfernen.
-4. Verlangt der Server einen API-Key, die Umgebungsvariable `FIRMA_API_KEY` setzen.
+1. For the `"firma"` provider, enter the address of your LLM server (`"baseURL"`) and, under `"models"`, the model
+   ID exactly as the server reports it at `<baseURL>/models`.
+2. Set `"model"` to `"firma/<model-id>"`.
+3. Remove unused local providers (Ollama, LM Studio) from `"policies"` and `"providers"`.
+4. If the server requires an API key, set the environment variable `FIRMA_API_KEY`.
 
-Hinweis für Denk-Modelle (z. B. Qwen3): Liefert das Modell nach dem Nachdenken keine Tool-Aufrufe, hilft der
-`reasoning_effort`-Hinweis in der Vorlage.
+Note for reasoning models (e.g. Qwen3): if the model produces no tool calls after thinking, the
+`reasoning_effort` hint in the template helps.
 
-### 2. Umgebungsvariablen setzen
+### 2. Set environment variables
 
-**macOS / Linux:** [`offline.env`](local-only/offline.env) einbinden, z. B. in `~/.zshrc`:
+**macOS / Linux:** source [`offline.env`](local-only/offline.env), e.g. in `~/.zshrc`:
 
 ```sh
-set -a; source /pfad/zu/local-only/offline.env; set +a
+set -a; source /path/to/local-only/offline.env; set +a
 ```
 
-**Windows:** [`opencode-offline.cmd`](local-only/opencode-offline.cmd) neben `opencode.exe` und `rg.exe` legen und opencode
-darüber starten. Das Skript setzt dieselben Variablen und findet `rg.exe` im selben Ordner.
+**Windows:** put [`opencode-offline.cmd`](local-only/opencode-offline.cmd) next to `opencode.exe` and `rg.exe` and
+start opencode through it. The script sets the same variables and finds `rg.exe` in the same folder.
 
-### 3. ripgrep bereitstellen
+### 3. Provide ripgrep
 
-- macOS: `brew install ripgrep` (vor dem Umzug ins Firmennetz) oder `rg` in den `PATH` legen
-- Linux: Paket `ripgrep`
-- Windows: `rg.exe` neben `opencode.exe`
-
----
-
-## Prüfen, ob alles offline bleibt
-
-- opencode starten: Es muss ohne Internet hochfahren, die Modellliste anzeigen und mit dem lokalen Server arbeiten.
-- Ausgehende Verbindungen beobachten, z. B. `lsof -i -P | grep opencode` oder mit Little Snitch / LuLu (macOS).
-  Erwartet sind nur Verbindungen zu `127.0.0.1` bzw. zum eigenen LLM-Server.
+- macOS: `brew install ripgrep` (before moving into the offline network) or put `rg` on your `PATH`
+- Linux: package `ripgrep`
+- Windows: `rg.exe` next to `opencode.exe`
 
 ---
 
-## Was der Fork nicht verhindert
+## Verifying that everything stays offline
 
-Die Sperren schützen davor, dass **das Modell** von sich aus Daten nach außen schickt. Gegen einen Anwender, der
-das bewusst einrichtet, schützen sie nicht:
-
-- **MCP-Server** lassen sich weiterhin in der Config eintragen, auch solche mit Internet-Adresse.
-- Das **Shell-Tool** kann Befehle wie `curl` ausführen (je nach Rechte-Einstellung mit Rückfrage).
-- **Plugins** sind Code mit vollen Rechten.
-
-Verlässlich abschotten lässt sich das nur über das Netz (Firewall, Proxy bzw. ein Netz ohne Internetzugang).
+- Start opencode: it must start without internet, show the model list and work with the local server.
+- Watch outgoing connections, e.g. `lsof -i -P | grep opencode` or with Little Snitch / LuLu (macOS).
+  Only connections to `127.0.0.1` or your own LLM server are expected.
 
 ---
 
-## Fork aktualisieren
+## What the fork does not prevent
 
-Der Fork hat zwei Haupt-Branches:
+The locks prevent **the model** from sending data to the outside on its own. They do not protect against a user who
+deliberately sets this up:
 
-- **`local`**: der Stand dieses Forks mit allen Änderungen. Diesen Branch baut und nutzt man.
-- **`dev`**: unverändertes opencode (Upstream). Er dient als Vergleichsbasis und wird nur mit Upstream
-  abgeglichen.
+- **MCP servers** can still be added to the config, including ones with an internet address.
+- The **shell tool** can run commands such as `curl` (with a confirmation prompt, depending on permission settings).
+- **Plugins** are code with full privileges.
 
-Eine neue opencode-Version kommt per „Sync fork“ nach `dev` und wird dann in `local` gemergt. Danach führt man
-im Repo-Root `local-only/check-fork.sh` aus.
-Das Skript meldet, ob eine der Fork-Änderungen beim Merge verloren gegangen ist, und listet Internet-Adressen im
-Code auf, die neu dazugekommen sein könnten. Das genaue Vorgehen steht in [`FORK-CHANGES.md`](local-only/FORK-CHANGES.md).
+Reliable isolation is only possible at the network level (firewall, proxy, or a network without internet access).
+
+---
+
+## Updating the fork
+
+The fork has two main branches:
+
+- **`local`**: this fork's state with all changes. This is the branch you build and use.
+- **`dev`**: unmodified opencode (upstream). It serves as the comparison baseline and is only synced with upstream.
+
+A new opencode version arrives in `dev` via "Sync fork" and is then merged into `local`. Afterwards, run
+`local-only/check-fork.sh` from the repo root.
+The script reports whether any fork change was lost during the merge and lists internet addresses in the code that
+may have been added. The exact procedure is described in [`FORK-CHANGES.md`](local-only/FORK-CHANGES.md).
