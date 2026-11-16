@@ -73,3 +73,20 @@ The output must list `organisation/<model-id>`.
 2. Replace `opencode.exe` with the new file.
 3. Compare the new `opencode.jsonc` with your own and copy over new entries (e.g. `"model"`). Do not simply
    overwrite your own file, otherwise `baseURL` and the model ID are placeholders again.
+
+### Updating from a release up to 2026-11-10
+
+Releases up to 2026-11-10 stored sessions in `opencode-local-tree-sitter.db`; newer releases use
+`opencode-local-only.db`. Without the following step, opencode starts with an empty session list (the old sessions
+are not deleted). To keep them, do this after step 1 and before the first start of the new version:
+
+1. Show the database path of the new version:
+
+   ```bat
+   opencode-offline.cmd debug paths
+   ```
+
+   The `db` line ends in `opencode-local-only.db`.
+2. In that folder, rename `opencode-local-tree-sitter.db` to `opencode-local-only.db`. If files ending in
+   `-wal` or `-shm` exist next to it, rename them the same way (`opencode-local-only.db-wal`,
+   `opencode-local-only.db-shm`).

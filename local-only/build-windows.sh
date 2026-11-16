@@ -12,6 +12,11 @@ set -euo pipefail
 
 RG_SHA256=decdd4992f3f1b9a5ef9898f1b40ab16886d579d6516b4efd3d5eaa19364e408
 RG_VERSION=15.1.0
+# Fester Channel statt Ableitung aus dem Git-Branch (packages/script/src/index.ts). Der Channel bestimmt u. a. den
+# Namen der Session-Datenbank (opencode-<channel>.db) und den Port des Hintergrund-Servers. Nie "local" oder "dev":
+# Diese Channels schalten alle experimentellen Feature-Flags ein und betten Source-Maps ein. Ändern nur mit
+# Migrationshinweis im Release, sonst finden Anwender ihre Sessions nicht mehr. Bis 2026-11-10: "local-tree-sitter".
+CHANNEL=local-only
 
 repo="$(cd "$(dirname "$0")/.." && pwd)"
 [ -d "$HOME/.bun/bin" ] && PATH="$HOME/.bun/bin:$PATH"
@@ -42,8 +47,8 @@ fi
 build="$(mktemp -d)"
 trap 'rm -rf "$build"' EXIT
 
-echo "==> opencode.exe bauen (Branch $branch, Commit $commit$dirty)"
-(cd packages/cli && OPENCODE_TARGET=windows-x64 bun run script/build.ts --outdir="$build/cli")
+echo "==> opencode.exe bauen (Branch $branch, Commit $commit$dirty, Channel $CHANNEL)"
+(cd packages/cli && OPENCODE_CHANNEL=$CHANNEL OPENCODE_TARGET=windows-x64 bun run script/build.ts --outdir="$build/cli")
 
 dist="$build/opencode-windows"
 mkdir -p "$dist"
