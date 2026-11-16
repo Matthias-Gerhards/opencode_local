@@ -26,7 +26,7 @@ fi
 actual="$(shasum -a 256 "$rg_exe" | cut -d' ' -f1)"
 if [ "$actual" != "$RG_SHA256" ]; then
   echo "rg.exe hat die falsche Prüfsumme ($actual), erwartet ripgrep $RG_VERSION x86_64-pc-windows-msvc ($RG_SHA256)." >&2
-  echo "Bei einer neuen ripgrep-Version RG_SHA256/RG_VERSION hier und rg-Version in local-only/LIESMICH.txt anpassen." >&2
+  echo "Bei einer neuen ripgrep-Version RG_SHA256/RG_VERSION hier und rg-Version in local-only/Readme.md anpassen." >&2
   exit 1
 fi
 
@@ -50,7 +50,7 @@ mkdir -p "$dist"
 cp "$build/cli/cli-windows-x64/bin/opencode.exe" "$dist/"
 cp "$rg_exe" "$dist/rg.exe"
 # Textdateien mit Windows-Zeilenenden (im Repo LF)
-for f in opencode-offline.cmd opencode.jsonc LIESMICH.txt; do
+for f in opencode-offline.cmd opencode.jsonc Readme.md; do
   tr -d '\r' < "local-only/$f" | sed 's/$/\r/' > "$dist/$f"
 done
 

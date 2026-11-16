@@ -80,7 +80,7 @@ start opencode through it. The script sets the same variables and finds `rg.exe`
 ### Windows package
 
 The Windows release (`opencode-windows-x64.zip` on the fork's GitHub releases) contains `opencode.exe`, `rg.exe`,
-`opencode-offline.cmd`, `opencode.jsonc` and [`LIESMICH.txt`](local-only/LIESMICH.txt) (setup notes in German).
+`opencode-offline.cmd`, `opencode.jsonc` and [`Readme.md`](local-only/Readme.md) (setup notes).
 Build it on macOS or Linux with:
 
 ```sh

@@ -55,7 +55,7 @@ for flag in OPENCODE_DISABLE_AUTOUPDATE OPENCODE_DISABLE_FREE_MODELS OPENCODE_DI
 done
 
 echo "7. Windows-Distribution"
-for f in local-only/build-windows.sh local-only/LIESMICH.txt; do exists "$f"; done
+for f in local-only/build-windows.sh local-only/Readme.md; do exists "$f"; done
 check "build.ts kennt OPENCODE_TARGET" packages/cli/script/build.ts 'process.env.OPENCODE_TARGET'
 check "build.ts kennt --outdir"        packages/cli/script/build.ts '"--outdir="'
 
