@@ -264,7 +264,7 @@ mit einem System-Verzeichnis alle Dokumente aufzählen, sehen zwei zusätzliche 
 
 | Datei | Zweck |
 | --- | --- |
-| `local-only/opencode.jsonc` | Config, die per Config abschaltbare Zugriffe sperrt: `update: disable`, `share: disabled`, `formatter: false`, webfetch-Deny (Loopback erlaubt), festes Standardmodell, Provider-Vorlage `organisation` (OpenAI-kompatibel, lokale Basis-URL, Hinweis zu `reasoning_effort`) |
+| `local-only/opencode.jsonc_template` | Config, die per Config abschaltbare Zugriffe sperrt: `update: disable`, `share: disabled`, `formatter: false`, webfetch-Deny (Loopback erlaubt), festes Standardmodell, Provider-Vorlage `organisation` (OpenAI-kompatibel, lokale Basis-URL, Hinweis zu `reasoning_effort`) |
 | `local-only/offline.env` | Env-Variablen für macOS/Linux: `OPENCODE_DISABLE_MODELS_FETCH`, `OPENCODE_DISABLE_AUTOUPDATE`, `OPENCODE_DISABLE_FREE_MODELS` |
 | `local-only/opencode-offline.cmd` | Windows-Starter: gleiche Variablen, `rg.exe` neben `opencode.exe` im `PATH` |
 
@@ -302,13 +302,17 @@ bauen. Bis 2026-11-10 wurde sie von Hand zusammengestellt; die Anleitung (bis da
 | --- | --- |
 | `local-only/build-windows.sh` | Cross-Compile von `opencode.exe` auf macOS/Linux (`OPENCODE_TARGET=windows-x64 bun run script/build.ts` in `packages/cli`), Ordner `opencode-windows/` zusammenstellen, Textdateien auf CRLF umstellen, ZIP packen. Gibt Prüfsumme, Commit und den passenden `gh release create`-Befehl aus |
 | `local-only/Readme.md` | Einrichtungs- und Fehlerhinweise für Windows-Anwender, englisch, Markdown (im Repo LF, in der ZIP CRLF) |
+| `local-only/install.bat` | Fragt `Organisations_Name`, `Model_Name`, `Model_Url`, `Windows_Username` (Enter = angemeldeter Benutzer) ab, erzeugt `opencode.jsonc` aus `opencode.jsonc_template` daneben (Vorlage bleibt unverändert) und kopiert sie nach `C:\Users\<Windows_Username>\.config\opencode\` (nur `.config\opencode` wird bei Bedarf angelegt; `C:\Users\<Windows_Username>` muss existieren, sonst Fehler vor jedem Schreibzugriff; in Windows verbotene Zeichen im Namen werden abgelehnt). Ersetzt wörtlich `Organisation LLM` (durch `Organisations_Name`), `Organisation model` und `model-id` (beide durch `Model_Name`) sowie `http://llm.intern:8000/v1` (überall, auch im Kommentar `<model-id>`). Eine vorhandene `opencode.jsonc` wird an beiden Orten vorher als `opencode.jsonc.bak` gesichert (überschreibt die Sicherung des vorigen Laufs). Ersetzung per PowerShell (`String.Replace`, UTF-8 ohne BOM), Benutzereingaben nur über `$env:`, nie per `%…%`. Lehnt `"` und `\` ab und verlangt `http(s)://` |
+| `local-only/install.sh` | Testfassung von `install.bat` mit gleichen Abläufen für macOS/Linux (awk mit `index()`, da Bash 3.2 Quotes in `${var//…}` falsch behandelt). Nicht in der ZIP; Änderungen immer in beiden Dateien nachziehen. Im Repo aufgerufen, schreibt es `local-only/opencode.jsonc` (+ `.bak`), beide gitignored. Benutzerordner: Elternordner von `$HOME`; zum Testen `USERS_DIR=<tmp>` setzen, sonst wird die eigene `~/.config/opencode/opencode.jsonc` überschrieben |
+| `.github/workflows/local-only-install.yml` | Testet `install.bat` auf `windows-latest` in echtem `cmd.exe` mit PowerShell 5.1 (CRLF wie in der ZIP, Eingaben per `install.bat < input.txt`): ungültige Eingaben und fehlender Benutzerordner (Exit 1, nichts geschrieben), zwei gültige Läufe (Kopie nach `C:\Users\runneradmin\.config\opencode`, Backups, kein BOM, CRLF, Vorlage unverändert) und gleicher Inhalt wie `install.sh` (Git Bash; Vergleich ohne CR, da awk dort CR beim Lesen entfernt). Läuft bei PRs, die `install.*`/`opencode.jsonc_template` ändern, und per Hand. Neue Datei, kein Upstream-Konflikt |
 
 ```sh
 local-only/build-windows.sh <pfad/zu/rg.exe> [ausgabeordner]    # Standard: local-only/dist/ (gitignored)
 ```
 
-Inhalt der ZIP: `opencode.exe`, `rg.exe`, `opencode-offline.cmd`, `opencode.jsonc`, `Readme.md` (alle im
-Unterordner `opencode-windows/`).
+Inhalt der ZIP: `opencode.exe`, `rg.exe`, `install.bat`, `opencode-offline.cmd`, `opencode.jsonc_template`, `Readme.md`
+(alle im Unterordner `opencode-windows/`). Werden die Platzhalter in `opencode.jsonc_template` umbenannt, `install.bat`,
+`install.sh` und die Platzhalter-Prüfungen in `check-fork.sh` mitziehen.
 
 **rg.exe** wird nicht eingecheckt (Binärdatei). Erwartet wird ripgrep 15.1.0 aus
 `ripgrep-15.1.0-x86_64-pc-windows-msvc.zip` (Release-Seite von BurntSushi/ripgrep); das Skript prüft die
@@ -317,7 +321,7 @@ SHA-256-Summe (`RG_SHA256`). Bei einem ripgrep-Update `RG_SHA256`/`RG_VERSION` i
 
 **Release:** Branch pushen, Release-Text in `notes.md` schreiben (bisheriges Schema: „Neu gegenüber …“, „Update“,
 „Inhalt“), dann den vom Skript ausgegebenen `gh release create`-Befehl ausführen, immer mit
-`-R Matthias-Gerhards/opencode_local`. Ändert sich `opencode.jsonc` oder `Readme.md`, im Release-Text darauf
+`-R Matthias-Gerhards/opencode_local`. Ändert sich `opencode.jsonc_template` oder `Readme.md`, im Release-Text darauf
 hinweisen, dass Anwender ihre eigene `opencode.jsonc` nicht überschreiben, sondern abgleichen.
 
 **Channel fest `local-only`:** Ohne `OPENCODE_CHANNEL` leitet `packages/script/src/index.ts` den Channel aus dem
