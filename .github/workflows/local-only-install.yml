@@ -1,0 +1,111 @@
+name: local-only-install
+
+# local-only: Testet local-only/install.bat unter echtem Windows (cmd.exe + PowerShell 5.1), so wie es in der ZIP
+# liegt (CRLF, wie local-only/build-windows.sh). Eingaben kommen per Umleitung aus einer Datei; das Ergebnis muss
+# byte-gleich zu install.sh sein. Siehe local-only/FORK-CHANGES.md, Abschnitt 7.
+on:
+  pull_request:
+    paths:
+      - local-only/install.bat
+      - local-only/install.sh
+      - local-only/opencode.jsonc_template
+      - .github/workflows/local-only-install.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install-bat:
+    name: install.bat on Windows
+    runs-on: windows-latest
+    # Fehlt eine Eingabezeile, fragt install.bat am Dateiende endlos erneut
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Prepare ZIP-like folder and expected output from install.sh
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(cygpath -u "$RUNNER_TEMP")"
+          mkdir -p "$tmp/pkg" "$tmp/sh" "$tmp/sh-users/runneradmin"
+          # Wie build-windows.sh: Textdateien mit CRLF
+          for f in install.bat opencode.jsonc_template; do
+            tr -d '\r' < "local-only/$f" | sed 's/$/\r/' > "$tmp/pkg/$f"
+          done
+          cp local-only/install.sh "$tmp/pkg/opencode.jsonc_template" "$tmp/sh/"
+          printf 'ACME & Co/1\nqwen3-coder:30b\nhttps://llm.acme.local/v1&x=1\nrunneradmin\n' \
+            | USERS_DIR="$tmp/sh-users" bash "$tmp/sh/install.sh"
+          cp "$tmp/sh/opencode.jsonc" "$tmp/expected.jsonc"
+
+      - name: Run install.bat
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $pkg = Join-Path $env:RUNNER_TEMP 'pkg'
+          $local = Join-Path $pkg 'opencode.jsonc'
+          $target = 'C:\Users\runneradmin\.config\opencode\opencode.jsonc'
+          $templateHash = (Get-FileHash (Join-Path $pkg 'opencode.jsonc_template')).Hash
+          $failed = @()
+
+          function Invoke-Install($name, $lines) {
+            Write-Host "::group::$name"
+            Set-Content -Path (Join-Path $pkg 'input.txt') -Value $lines -Encoding ascii
+            Push-Location $pkg
+            cmd /c 'install.bat < input.txt'
+            $code = $LASTEXITCODE
+            Pop-Location
+            Write-Host "exit $code"
+            Write-Host '::endgroup::'
+            $code
+          }
+          function Check($name, $ok) {
+            if ($ok) { Write-Host "OK      $name" } else { Write-Host "FAILED  $name"; $script:failed += $name }
+          }
+
+          if ($env:USERNAME -ne 'runneradmin') { throw "unexpected runner user $env:USERNAME" }
+          if (Test-Path $target) { throw "$target exists before the test" }
+
+          # Ungültige Eingaben: Exit 1, nichts geschrieben
+          $invalid = [ordered]@{
+            'double quote in name' = @('a"b', 'm', 'http://x/v1', 'runneradmin')
+            'url without http'     = @('a', 'm', 'llm:8000/v1', 'runneradmin')
+            'missing user folder'  = @('a', 'm', 'http://x/v1', 'ghost')
+            'path in user name'    = @('a', 'm', 'http://x/v1', '..\Public')
+            'dot user name'        = @('a', 'm', 'http://x/v1', '..')
+          }
+          foreach ($case in $invalid.GetEnumerator()) {
+            $code = Invoke-Install $case.Key $case.Value
+            Check "$($case.Key): exit 1" ($code -eq 1)
+            Check "$($case.Key): nothing written" (-not (Test-Path $local) -and -not (Test-Path (Split-Path $target)) -and -not (Test-Path 'C:\Users\ghost'))
+          }
+
+          # Erster gültiger Lauf, Enter beim Benutzernamen = angemeldeter Benutzer
+          $code = Invoke-Install 'valid run 1' @('ACME & Co/1', 'qwen3-coder:30b', 'https://llm.acme.local/v1&x=1', '')
+          Check 'run 1: exit 0' ($code -eq 0)
+          $bytes = [IO.File]::ReadAllBytes($local)
+          Check 'run 1: identical to install.sh output' ((Get-FileHash $local).Hash -eq (Get-FileHash (Join-Path $env:RUNNER_TEMP 'expected.jsonc')).Hash)
+          Check 'run 1: copied to user config' ((Get-FileHash $local).Hash -eq (Get-FileHash $target).Hash)
+          Check 'run 1: no BOM' (-not ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF))
+          $text = [IO.File]::ReadAllText($local)
+          Check 'run 1: CRLF kept' (-not ($text -match '[^\r]\n'))
+          Check 'run 1: values set' ($text.Contains('"name": "ACME & Co/1"') -and $text.Contains('"model": "organisation/qwen3-coder:30b"') -and $text.Contains('"baseURL": "https://llm.acme.local/v1&x=1"'))
+          Check 'run 1: placeholders gone' (-not $text.Contains('Organisation LLM') -and -not $text.Contains('model-id') -and -not $text.Contains('llm.intern'))
+          Check 'run 1: no backups yet' (-not (Test-Path "$local.bak") -and -not (Test-Path "$target.bak"))
+          $run1Hash = (Get-FileHash $local).Hash
+
+          # Zweiter Lauf: Backups an beiden Orten enthalten Lauf 1
+          $code = Invoke-Install 'valid run 2' @('Beta', 'm2', 'http://10.0.0.5:8000/v1', 'runneradmin')
+          Check 'run 2: exit 0' ($code -eq 0)
+          Check 'run 2: local backup = run 1' ((Get-FileHash "$local.bak").Hash -eq $run1Hash)
+          Check 'run 2: user backup = run 1' ((Get-FileHash "$target.bak").Hash -eq $run1Hash)
+          Check 'run 2: new values copied' ([IO.File]::ReadAllText($target).Contains('"model": "organisation/m2"'))
+
+          Check 'template unchanged' ((Get-FileHash (Join-Path $pkg 'opencode.jsonc_template')).Hash -eq $templateHash)
+
+          if ($failed.Count -gt 0) { throw "$($failed.Count) check(s) failed: $($failed -join ', ')" }
