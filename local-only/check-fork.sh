@@ -63,6 +63,7 @@ check "install.bat in der ZIP"         local-only/build-windows.sh 'for f in ins
 # Platzhalter, die install.bat/install.sh ersetzen
 check "Platzhalter Organisation LLM"   local-only/opencode.jsonc_template '"name": "Organisation LLM"'
 check "Platzhalter model-id"           local-only/opencode.jsonc_template '"model": "organisation/model-id"'
+check "Platzhalter Organisation model" local-only/opencode.jsonc_template '"name": "Organisation model"'
 check "Platzhalter Model_Url"          local-only/opencode.jsonc_template '"baseURL": "http://llm.intern:8000/v1"'
 check "OPENCODE_CHANNEL wird gelesen"  packages/script/src/index.ts 'if (env.OPENCODE_CHANNEL) return env.OPENCODE_CHANNEL'
 

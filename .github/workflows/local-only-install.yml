@@ -105,8 +105,8 @@ jobs:
           Check 'run 1: no BOM' (-not ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF))
           $text = [IO.File]::ReadAllText($local)
           Check 'run 1: CRLF kept' (-not ($text -match '[^\r]\n'))
-          Check 'run 1: values set' ($text.Contains('"name": "ACME & Co/1"') -and $text.Contains('"model": "organisation/qwen3-coder:30b"') -and $text.Contains('"baseURL": "https://llm.acme.local/v1&x=1"'))
-          Check 'run 1: placeholders gone' (-not $text.Contains('Organisation LLM') -and -not $text.Contains('model-id') -and -not $text.Contains('llm.intern'))
+          Check 'run 1: values set' ($text.Contains('"name": "ACME & Co/1"') -and $text.Contains('"model": "organisation/qwen3-coder:30b"') -and $text.Contains('"name": "qwen3-coder:30b"') -and $text.Contains('"baseURL": "https://llm.acme.local/v1&x=1"'))
+          Check 'run 1: placeholders gone' (-not $text.Contains('Organisation LLM') -and -not $text.Contains('Organisation model') -and -not $text.Contains('model-id') -and -not $text.Contains('llm.intern'))
           Check 'run 1: no backups yet' (-not (Test-Path "$local.bak") -and -not (Test-Path "$target.bak"))
           $run1Hash = (Get-FileHash $local).Hash
 

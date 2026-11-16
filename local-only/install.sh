@@ -68,6 +68,7 @@ awk '
   }
   {
     line = replace($0, "Organisation LLM", ENVIRON["Organisations_Name"])
+    line = replace(line, "Organisation model", ENVIRON["Model_Name"])
     line = replace(line, "model-id", ENVIRON["Model_Name"])
     print replace(line, "http://llm.intern:8000/v1", ENVIRON["Model_Url"])
   }

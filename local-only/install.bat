@@ -54,7 +54,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference = 'Stop';" ^
   "$enc = New-Object System.Text.UTF8Encoding $false;" ^
   "$text = [IO.File]::ReadAllText((Join-Path (Get-Location) 'opencode.jsonc_template'), $enc);" ^
-  "$text = $text.Replace('Organisation LLM', $env:Organisations_Name).Replace('model-id', $env:Model_Name).Replace('http://llm.intern:8000/v1', $env:Model_Url);" ^
+  "$text = $text.Replace('Organisation LLM', $env:Organisations_Name).Replace('Organisation model', $env:Model_Name).Replace('model-id', $env:Model_Name).Replace('http://llm.intern:8000/v1', $env:Model_Url);" ^
   "[IO.File]::WriteAllText((Join-Path (Get-Location) 'opencode.jsonc'), $text, $enc)"
 if errorlevel 1 goto fail
 echo Written: opencode.jsonc

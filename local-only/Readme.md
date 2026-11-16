@@ -15,7 +15,8 @@
 1. Copy this folder to a permanent location, e.g. `C:\Tools\opencode-windows\`.
 2. Run `install.bat` in this folder and enter, one after the other:
    - `Organisations_Name`: display name of the provider, e.g. `ACME LLM`
-   - `Model_Name`: the model ID as returned by `GET <baseURL>/models`, e.g. `qwen3-coder:30b`
+   - `Model_Name`: the model ID as returned by `GET <baseURL>/models`, e.g. `qwen3-coder:30b` (also used as the model's
+     display name)
    - `Model_Url`: address of your organisation's LLM server, e.g. `http://llm.intern:8000/v1`
    - `Windows_Username`: the Windows user who will run opencode (press Enter for the current user)
 
