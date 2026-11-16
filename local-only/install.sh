@@ -26,9 +26,10 @@ ask() {
 Organisations_Name="$(ask Organisations_Name)"
 Model_Name="$(ask Model_Name)"
 Model_Url="$(ask Model_Url)"
-# Enter = angemeldeter Benutzer
-read -r -p "Windows_Username [$USER]: " Windows_Username
-Windows_Username="${Windows_Username:-$USER}"
+# Enter = angemeldeter Benutzer (USERNAME: Git Bash unter Windows kennt kein USER)
+current_user="${USER:-${USERNAME:-}}"
+read -r -p "Windows_Username [$current_user]: " Windows_Username
+Windows_Username="${Windows_Username:-$current_user}"
 users_dir="${USERS_DIR:-$(dirname "$HOME")}"
 
 # Werte landen in JSON-Strings: " und \ würden die Datei zerstören
@@ -44,7 +45,7 @@ esac
 # In Windows verbotene Zeichen ablehnen (verhindert auch Pfade wie ../x); Benutzerordner muss existieren
 # (wird nie angelegt, sonst entstünde bei Tippfehlern still ein falscher Ordner)
 case "$Windows_Username" in
-  *[\\/:*?\<\>\|\[\]\;=,+\"]* | . | ..) echo "Error: invalid Windows_Username." >&2; exit 1 ;;
+  *[\\/:*?\<\>\|\[\]\;=,+\"]* | "" | . | ..) echo "Error: invalid Windows_Username." >&2; exit 1 ;;
 esac
 if [ ! -d "$users_dir/$Windows_Username" ]; then
   echo "Error: $users_dir/$Windows_Username does not exist." >&2
