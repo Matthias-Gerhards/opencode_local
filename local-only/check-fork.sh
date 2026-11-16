@@ -48,17 +48,22 @@ exists packages/core/test/config/builtin.test.ts
 
 echo "5. Offline-Konfiguration"
 exists LOCAL_ONLY_FORK_README.md
-for f in local-only/opencode.jsonc local-only/offline.env local-only/opencode-offline.cmd; do exists "$f"; done
+for f in local-only/opencode.jsonc_template local-only/offline.env local-only/opencode-offline.cmd; do exists "$f"; done
 for flag in OPENCODE_DISABLE_AUTOUPDATE OPENCODE_DISABLE_FREE_MODELS OPENCODE_DISABLE_MODELS_FETCH OPENCODE_MODELS_URL; do
   if grep -rqF "$flag" packages/*/src 2>/dev/null; then echo "  OK      Flag $flag wird noch ausgewertet"
   else echo "  FEHLT   Flag $flag kommt in packages/*/src nicht mehr vor (umbenannt?)"; fail=1; fi
 done
 
 echo "7. Windows-Distribution"
-for f in local-only/build-windows.sh local-only/Readme.md; do exists "$f"; done
+for f in local-only/build-windows.sh local-only/Readme.md local-only/install.bat local-only/install.sh; do exists "$f"; done
 check "build.ts kennt OPENCODE_TARGET" packages/cli/script/build.ts 'process.env.OPENCODE_TARGET'
 check "build.ts kennt --outdir"        packages/cli/script/build.ts '"--outdir="'
 check "Channel fest local-only"        local-only/build-windows.sh 'CHANNEL=local-only'
+check "install.bat in der ZIP"         local-only/build-windows.sh 'for f in install.bat '
+# Platzhalter, die install.bat/install.sh ersetzen
+check "Platzhalter Organisation LLM"   local-only/opencode.jsonc_template '"name": "Organisation LLM"'
+check "Platzhalter model-id"           local-only/opencode.jsonc_template '"model": "organisation/model-id"'
+check "Platzhalter Model_Url"          local-only/opencode.jsonc_template '"baseURL": "http://llm.intern:8000/v1"'
 check "OPENCODE_CHANNEL wird gelesen"  packages/script/src/index.ts 'if (env.OPENCODE_CHANNEL) return env.OPENCODE_CHANNEL'
 
 echo

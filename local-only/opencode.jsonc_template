@@ -1,5 +1,6 @@
 // local-only: Konfiguration, die alle per Config abschaltbaren Internet-Zugriffe von opencode sperrt.
-// Ablage: ~/.config/opencode/opencode.jsonc (global) oder <projekt>/opencode.jsonc.
+// Vorlage, wird nie geändert. install.bat/install.sh erzeugen daraus opencode.jsonc (Platzhalter ersetzt).
+// Ablage der erzeugten Datei: ~/.config/opencode/opencode.jsonc (global) oder <projekt>/opencode.jsonc.
 // Bewusst ohne "$schema": Editoren würden das Schema sonst von opencode.ai laden.
 {
   // Standardmodell fest vorgeben ("<provider>/<model-id>", wie `opencode models` es auflistet).

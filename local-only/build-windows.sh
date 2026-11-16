@@ -55,7 +55,7 @@ mkdir -p "$dist"
 cp "$build/cli/cli-windows-x64/bin/opencode.exe" "$dist/"
 cp "$rg_exe" "$dist/rg.exe"
 # Textdateien mit Windows-Zeilenenden (im Repo LF)
-for f in opencode-offline.cmd opencode.jsonc Readme.md; do
+for f in install.bat opencode-offline.cmd opencode.jsonc_template Readme.md; do
   tr -d '\r' < "local-only/$f" | sed 's/$/\r/' > "$dist/$f"
 done
 

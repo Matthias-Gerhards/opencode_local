@@ -26,8 +26,9 @@ These changes are built in and cannot be reverted through the config.
 
 ## What is disabled through the config
 
-The file [`opencode.jsonc`](local-only/opencode.jsonc) is a ready-made template. Place it at
-`~/.config/opencode/opencode.jsonc` (Windows: `%USERPROFILE%\.config\opencode\opencode.jsonc`).
+The file [`opencode.jsonc_template`](local-only/opencode.jsonc_template) is a ready-made template.
+[`install.sh`](local-only/install.sh) (Windows: `install.bat`) creates `opencode.jsonc` from it with your organisation
+name, model name and server URL. Place the result at `~/.config/opencode/opencode.jsonc` (Windows: `%USERPROFILE%\.config\opencode\opencode.jsonc`).
 
 It disables or sets:
 
@@ -82,7 +83,7 @@ start opencode through it. The script sets the same variables and finds `rg.exe`
 ### Windows package
 
 The Windows release (`opencode-windows-x64.zip` on the fork's GitHub releases) contains `opencode.exe`, `rg.exe`,
-`opencode-offline.cmd`, `opencode.jsonc` and [`Readme.md`](local-only/Readme.md) (setup notes).
+`install.bat`, `opencode-offline.cmd`, `opencode.jsonc_template` and [`Readme.md`](local-only/Readme.md) (setup notes).
 Build it on macOS or Linux with:
 
 ```sh
