@@ -58,6 +58,8 @@ echo "7. Windows-Distribution"
 for f in local-only/build-windows.sh local-only/Readme.md; do exists "$f"; done
 check "build.ts kennt OPENCODE_TARGET" packages/cli/script/build.ts 'process.env.OPENCODE_TARGET'
 check "build.ts kennt --outdir"        packages/cli/script/build.ts '"--outdir="'
+check "Channel fest local-only"        local-only/build-windows.sh 'CHANNEL=local-only'
+check "OPENCODE_CHANNEL wird gelesen"  packages/script/src/index.ts 'if (env.OPENCODE_CHANNEL) return env.OPENCODE_CHANNEL'
 
 echo
 echo "Externe Hosts im Laufzeitcode (mit Tabelle in CLAUDE.md abgleichen):"

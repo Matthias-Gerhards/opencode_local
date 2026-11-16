@@ -320,8 +320,17 @@ SHA-256-Summe (`RG_SHA256`). Bei einem ripgrep-Update `RG_SHA256`/`RG_VERSION` i
 `-R Matthias-Gerhards/opencode_local`. Ändert sich `opencode.jsonc` oder `Readme.md`, im Release-Text darauf
 hinweisen, dass Anwender ihre eigene `opencode.jsonc` nicht überschreiben, sondern abgleichen.
 
+**Channel fest `local-only`:** Ohne `OPENCODE_CHANNEL` leitet `packages/script/src/index.ts` den Channel aus dem
+Git-Branch ab. Ein Build vom Branch `local` bekäme den Upstream-Channel für Entwickler-Builds: alle experimentellen
+Feature-Flags an (`packages/core/src/flag.ts`, `onByDefault`), eingebettete Source-Maps (+19 MB,
+`packages/cli/script/build.ts`), Datenbank `opencode-local.db` und fester Service-Port. Das Skript setzt deshalb
+`OPENCODE_CHANNEL=local-only` (Datenbank `opencode-local-only.db`, `packages/cli/src/database-path.ts`). Die
+Releases bis 2026-11-10 hatten den Channel `local-tree-sitter`; `Readme.md` beschreibt das Umbenennen der
+Datenbank. Den Channel nur mit Migrationshinweis im Release ändern.
+
 **Nach jedem Release-Wechsel:** prüfen, ob `packages/cli/script/build.ts` noch `OPENCODE_TARGET`, `--outdir` und
-den Ausgabepfad `<outdir>/cli-windows-x64/bin/opencode.exe` unterstützt (Skript einmal laufen lassen).
+den Ausgabepfad `<outdir>/cli-windows-x64/bin/opencode.exe` unterstützt und ob `OPENCODE_CHANNEL` weiterhin
+ausgewertet wird (Skript einmal laufen lassen, die Zeile `"channel": "local-only"` am Anfang der Ausgabe prüfen).
 
 ---
 
