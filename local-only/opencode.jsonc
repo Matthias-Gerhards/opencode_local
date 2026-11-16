@@ -2,9 +2,10 @@
 // Ablage: ~/.config/opencode/opencode.jsonc (global) oder <projekt>/opencode.jsonc.
 // Bewusst ohne "$schema": Editoren würden das Schema sonst von opencode.ai laden.
 {
-  // Standardmodell fest vorgeben ("<provider>/<modell-id>", wie `opencode models` es auflistet).
+  // Standardmodell fest vorgeben ("<provider>/<model-id>", wie `opencode models` es auflistet).
   // Sonst wählt opencode evtl. ein Katalogmodell von Ollama/LM Studio, auch wenn dort kein Server läuft (ECONNREFUSED).
-  "model": "firma/modell-id",
+  // Provider-Name "organisation" frei wählbar, muss aber an allen 5 mit [organisation] markierten Stellen gleich lauten.
+  "model": "organisation/model-id", // [organisation] 1/5
 
   // Kein Update-Check gegen opencode.ai / formulae.brew.sh (packages/cli/src/services/updater.ts)
   "update": "disable",
@@ -50,10 +51,11 @@
     { "action": "integration.connect", "resource": "lmstudio", "effect": "allow" },
     { "action": "integration.use", "resource": "lmstudio", "effect": "allow" },
 
-    // Eigener OpenAI-kompatibler Server im Firmennetz (siehe "firma" unten)
-    { "action": "provider.use", "resource": "firma", "effect": "allow" },
-    { "action": "integration.connect", "resource": "firma", "effect": "allow" },
-    { "action": "integration.use", "resource": "firma", "effect": "allow" }
+    // Eigener OpenAI-kompatibler Server im Netz der Organisation (siehe "organisation" unten).
+    // Fehlt eine dieser Freigaben oder passt der Name nicht, entfernt die Sperre oben den Provider ohne Fehlermeldung.
+    { "action": "provider.use", "resource": "organisation", "effect": "allow" }, // [organisation] 2/5
+    { "action": "integration.connect", "resource": "organisation", "effect": "allow" }, // [organisation] 3/5
+    { "action": "integration.use", "resource": "organisation", "effect": "allow" } // [organisation] 4/5
   ],
 
   // Lokale Endpunkte explizit setzen (Defaults: Ollama 127.0.0.1:11434, LM Studio 127.0.0.1:1234, vLLM 127.0.0.1:8000)
@@ -63,16 +65,17 @@
 
     // Vorlage für einen OpenAI-kompatiblen Server (vLLM, TGI, LiteLLM, llama.cpp, ...).
     // "@ai-sdk/openai-compatible" wird auf die eingebaute Implementierung umgebogen, es wird nichts von npm geladen.
-    "firma": {
-      "name": "Firmen-LLM",
+    "organisation": { // [organisation] 5/5
+      "name": "Organisation LLM",
       "package": "@ai-sdk/openai-compatible",
-      // API-Key aus dieser Umgebungsvariable lesen (entfällt, wenn der Server keinen Key verlangt)
-      "env": ["FIRMA_API_KEY"],
+      // API-Key aus dieser Umgebungsvariable lesen (entfällt, wenn der Server keinen Key verlangt).
+      // Name frei wählbar, muss nur zu opencode-offline.cmd passen.
+      "env": ["ORGANISATION_API_KEY"],
       "settings": { "baseURL": "http://llm.intern:8000/v1" },
       "models": {
         // Schlüssel = Modell-ID, wie sie GET <baseURL>/models liefert
-        "modell-id": {
-          "name": "Firmenmodell",
+        "model-id": {
+          "name": "Organisation model",
           // Ohne Tool-Calling kann opencode keine Dateien lesen oder bearbeiten
           "capabilities": { "tools": true },
           // Falls ein Denk-Modell (z. B. Qwen3 unter Ollama) nach dem Nachdenken keinen Tool-Call liefert:

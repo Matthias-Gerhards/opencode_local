@@ -13,14 +13,17 @@
 
 1. Copy this folder to a permanent location, e.g. `C:\Tools\opencode-windows\`.
 2. Copy `opencode.jsonc` to `%USERPROFILE%\.config\opencode\opencode.jsonc` (create the folder if needed) and fill
-   in the `"firma"` section:
-   - `"baseURL"`: address of your company LLM server, e.g. `http://llm.intern:8000/v1`
-   - the model ID instead of `"modell-id"` (as returned by `GET <baseURL>/models`)
+   in the `"organisation"` section:
+   - `"baseURL"`: address of your organisation's LLM server, e.g. `http://llm.intern:8000/v1`
+   - the model ID instead of `"model-id"` (as returned by `GET <baseURL>/models`)
    - `"context"` / `"output"` to match the model
 
-   At the very top, set `"model"` to the same model ID: `"firma/<model-id>"`.
-3. If the server requires an API key: in `opencode-offline.cmd`, enable the line `rem set FIRMA_API_KEY=...` and
-   enter the key.
+   At the very top, set `"model"` to the same model ID: `"organisation/<model-id>"`.
+
+   The provider name `organisation` can be changed, but it must be identical in all five places marked
+   `[organisation]` in `opencode.jsonc` (the provider key, `"model"` and three entries under `"policies"`).
+3. If the server requires an API key: in `opencode-offline.cmd`, enable the line `rem set ORGANISATION_API_KEY=...` and
+   enter the key. If you rename the variable, use the same name under `"env"` in `opencode.jsonc`.
 4. Always start opencode through `opencode-offline.cmd`, never directly through `opencode.exe`. In the project
    folder:
 
@@ -34,7 +37,7 @@
 opencode-offline.cmd models
 ```
 
-The output must list `firma/<model-id>`.
+The output must list `organisation/<model-id>`.
 
 ## Troubleshooting
 
@@ -43,8 +46,11 @@ The output must list `firma/<model-id>`.
 - **"Timed out waiting for response headers":** add e.g. `"headerTimeout": 900000` (milliseconds) under
   `"settings"`.
 - **"ripgrep not found":** `rg.exe` must be in the same folder as `opencode.exe`.
-- **"ECONNREFUSED", or an Ollama / LM Studio model is used:** set `"model": "firma/<model-id>"` in
+- **"ECONNREFUSED", or an Ollama / LM Studio model is used:** set `"model": "organisation/<model-id>"` in
   `opencode.jsonc`.
+- **The provider is missing from `opencode-offline.cmd models` after renaming it:** the name in one of the five
+  `[organisation]` places in `opencode.jsonc` does not match. The policies block every provider that is not allowed
+  by name, without an error message.
 - **Web search:** it is disabled in the program itself and cannot be turned on.
 - **Internet access happens anyway:** on first launch opencode starts a background server that keeps running
   after you close opencode and is reused on every start. If it was ever started without `opencode-offline.cmd`,

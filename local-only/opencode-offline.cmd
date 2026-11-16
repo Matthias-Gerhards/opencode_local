@@ -12,7 +12,7 @@ set OPENCODE_DISABLE_AUTOUPDATE=1
 rem Kostenlose opencode-Zen-Modelle (Cloud) ausblenden
 set OPENCODE_DISABLE_FREE_MODELS=1
 
-rem API-Key für den Provider "firma" (auskommentiert lassen, wenn der Server keinen verlangt)
-rem set FIRMA_API_KEY=...
+rem API-Key für den Provider "organisation" (auskommentiert lassen, wenn der Server keinen verlangt)
+rem set ORGANISATION_API_KEY=...
 
 "%~dp0opencode.exe" %*

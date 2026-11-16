@@ -264,7 +264,7 @@ mit einem System-Verzeichnis alle Dokumente aufzählen, sehen zwei zusätzliche 
 
 | Datei | Zweck |
 | --- | --- |
-| `local-only/opencode.jsonc` | Config, die per Config abschaltbare Zugriffe sperrt: `update: disable`, `share: disabled`, `formatter: false`, webfetch-Deny (Loopback erlaubt), festes Standardmodell, Provider-Vorlage `firma` (OpenAI-kompatibel, lokale Basis-URL, Hinweis zu `reasoning_effort`) |
+| `local-only/opencode.jsonc` | Config, die per Config abschaltbare Zugriffe sperrt: `update: disable`, `share: disabled`, `formatter: false`, webfetch-Deny (Loopback erlaubt), festes Standardmodell, Provider-Vorlage `organisation` (OpenAI-kompatibel, lokale Basis-URL, Hinweis zu `reasoning_effort`) |
 | `local-only/offline.env` | Env-Variablen für macOS/Linux: `OPENCODE_DISABLE_MODELS_FETCH`, `OPENCODE_DISABLE_AUTOUPDATE`, `OPENCODE_DISABLE_FREE_MODELS` |
 | `local-only/opencode-offline.cmd` | Windows-Starter: gleiche Variablen, `rg.exe` neben `opencode.exe` im `PATH` |
 

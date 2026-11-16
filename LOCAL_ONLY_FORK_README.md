@@ -37,7 +37,7 @@ It disables or sets:
 - **webfetch**: requests to the internet are denied, only `localhost`/`127.0.0.1` are allowed. If needed, webfetch
   can be enabled with a confirmation prompt before each request (commented-out lines in the template).
 - **Cloud providers and accounts** (OpenAI, Anthropic, Copilot, opencode Console, …): blocked
-- **Local providers**: Ollama, LM Studio and a company server (`"firma"`) are allowed
+- **Local providers**: Ollama, LM Studio and a server in your organisation's network (`"organisation"`) are allowed
 - **Default model**: set explicitly so opencode does not pick a model whose server isn't running
 
 Every user can change these settings in their own config. Only what is listed above under "What is changed in the
@@ -51,11 +51,13 @@ program" is built in.
 
 In `opencode.jsonc`:
 
-1. For the `"firma"` provider, enter the address of your LLM server (`"baseURL"`) and, under `"models"`, the model
+1. For the `"organisation"` provider, enter the address of your LLM server (`"baseURL"`) and, under `"models"`, the model
    ID exactly as the server reports it at `<baseURL>/models`.
-2. Set `"model"` to `"firma/<model-id>"`.
+2. Set `"model"` to `"organisation/<model-id>"`. The provider name `organisation` can be changed, but it must be
+   identical in all five places marked `[organisation]` (provider key, `"model"`, three `"policies"` entries);
+   otherwise the deny-all policy silently removes the provider.
 3. Remove unused local providers (Ollama, LM Studio) from `"policies"` and `"providers"`.
-4. If the server requires an API key, set the environment variable `FIRMA_API_KEY`.
+4. If the server requires an API key, set the environment variable `ORGANISATION_API_KEY`.
 
 Note for reasoning models (e.g. Qwen3): if the model produces no tool calls after thinking, the
 `reasoning_effort` hint in the template helps.
