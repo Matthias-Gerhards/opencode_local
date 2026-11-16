@@ -2,7 +2,7 @@ name: local-only-install
 
 # local-only: Testet local-only/install.bat unter echtem Windows (cmd.exe + PowerShell 5.1), so wie es in der ZIP
 # liegt (CRLF, wie local-only/build-windows.sh). Eingaben kommen per Umleitung aus einer Datei; das Ergebnis muss
-# byte-gleich zu install.sh sein. Siehe local-only/FORK-CHANGES.md, Abschnitt 7.
+# inhaltlich gleich zu install.sh sein. Siehe local-only/FORK-CHANGES.md, Abschnitt 7.
 on:
   pull_request:
     paths:
@@ -91,8 +91,9 @@ jobs:
           Check 'run 1: exit 0' ($code -eq 0)
           $bytes = [IO.File]::ReadAllBytes($local)
           $expected = Join-Path $env:RUNNER_TEMP 'expected.jsonc'
-          $same = (Get-FileHash $local).Hash -eq (Get-FileHash $expected).Hash
-          Check 'run 1: identical to install.sh output' $same
+          # Ohne CR vergleichen: awk in Git Bash entfernt CR beim Lesen; CRLF prüft 'run 1: CRLF kept'
+          $same = [IO.File]::ReadAllText($local).Replace("`r", '') -ceq [IO.File]::ReadAllText($expected).Replace("`r", '')
+          Check 'run 1: same content as install.sh output' $same
           if (-not $same) {
             foreach ($f in @($local, $expected)) {
               $t = [IO.File]::ReadAllText($f)
