@@ -57,7 +57,8 @@ jobs:
             Write-Host "::group::$name"
             Set-Content -Path (Join-Path $pkg 'input.txt') -Value $lines -Encoding ascii
             Push-Location $pkg
-            cmd /c 'install.bat < input.txt'
+            # Out-Host: sonst wird die Ausgabe von install.bat Teil des Rückgabewerts
+            cmd /c 'install.bat < input.txt' | Out-Host
             $code = $LASTEXITCODE
             Pop-Location
             Write-Host "exit $code"
@@ -89,7 +90,16 @@ jobs:
           $code = Invoke-Install 'valid run 1' @('ACME & Co/1', 'qwen3-coder:30b', 'https://llm.acme.local/v1&x=1', '')
           Check 'run 1: exit 0' ($code -eq 0)
           $bytes = [IO.File]::ReadAllBytes($local)
-          Check 'run 1: identical to install.sh output' ((Get-FileHash $local).Hash -eq (Get-FileHash (Join-Path $env:RUNNER_TEMP 'expected.jsonc')).Hash)
+          $expected = Join-Path $env:RUNNER_TEMP 'expected.jsonc'
+          $same = (Get-FileHash $local).Hash -eq (Get-FileHash $expected).Hash
+          Check 'run 1: identical to install.sh output' $same
+          if (-not $same) {
+            foreach ($f in @($local, $expected)) {
+              $t = [IO.File]::ReadAllText($f)
+              Write-Host "$f : $((Get-Item $f).Length) bytes, CRLF $(([regex]::Matches($t, "`r`n")).Count), LF $(([regex]::Matches($t, "`n")).Count)"
+            }
+            Compare-Object (Get-Content $local) (Get-Content $expected) | Select-Object -First 10 | Format-Table -AutoSize | Out-Host
+          }
           Check 'run 1: copied to user config' ((Get-FileHash $local).Hash -eq (Get-FileHash $target).Hash)
           Check 'run 1: no BOM' (-not ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF))
           $text = [IO.File]::ReadAllText($local)
