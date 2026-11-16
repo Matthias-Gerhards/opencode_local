@@ -77,6 +77,19 @@ start opencode through it. The script sets the same variables and finds `rg.exe`
 - Linux: package `ripgrep`
 - Windows: `rg.exe` next to `opencode.exe`
 
+### Windows package
+
+The Windows release (`opencode-windows-x64.zip` on the fork's GitHub releases) contains `opencode.exe`, `rg.exe`,
+`opencode-offline.cmd`, `opencode.jsonc` and [`LIESMICH.txt`](local-only/LIESMICH.txt) (setup notes in German).
+Build it on macOS or Linux with:
+
+```sh
+local-only/build-windows.sh /path/to/rg.exe      # ripgrep 15.1.0, x86_64-pc-windows-msvc
+```
+
+The ZIP lands in `local-only/dist/` (not committed). Details in [`FORK-CHANGES.md`](local-only/FORK-CHANGES.md),
+section 7.
+
 ---
 
 ## Verifying that everything stays offline

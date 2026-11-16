@@ -293,6 +293,38 @@ erhalten bleiben.
 
 ---
 
+## 7. Windows-Distribution bauen (nur `local-only/`, konfliktfrei)
+
+**Zweck:** Die ZIP `opencode-windows-x64.zip` für die GitHub-Releases (`local-windows-<datum>`) reproduzierbar
+bauen. Bis 2026-11-10 wurde sie von Hand zusammengestellt; `LIESMICH.txt` existierte nur in den ZIPs.
+
+| Datei | Zweck |
+| --- | --- |
+| `local-only/build-windows.sh` | Cross-Compile von `opencode.exe` auf macOS/Linux (`OPENCODE_TARGET=windows-x64 bun run script/build.ts` in `packages/cli`), Ordner `opencode-windows/` zusammenstellen, Textdateien auf CRLF umstellen, ZIP packen. Gibt Prüfsumme, Commit und den passenden `gh release create`-Befehl aus |
+| `local-only/LIESMICH.txt` | Einrichtungs- und Fehlerhinweise für Windows-Anwender (im Repo LF, in der ZIP CRLF) |
+
+```sh
+local-only/build-windows.sh <pfad/zu/rg.exe> [ausgabeordner]    # Standard: local-only/dist/ (gitignored)
+```
+
+Inhalt der ZIP: `opencode.exe`, `rg.exe`, `opencode-offline.cmd`, `opencode.jsonc`, `LIESMICH.txt` (alle im
+Unterordner `opencode-windows/`).
+
+**rg.exe** wird nicht eingecheckt (Binärdatei). Erwartet wird ripgrep 15.1.0 aus
+`ripgrep-15.1.0-x86_64-pc-windows-msvc.zip` (Release-Seite von BurntSushi/ripgrep); das Skript prüft die
+SHA-256-Summe (`RG_SHA256`). Bei einem ripgrep-Update `RG_SHA256`/`RG_VERSION` im Skript und die Versionsangabe in
+`LIESMICH.txt` anpassen.
+
+**Release:** Branch pushen, Release-Text in `notes.md` schreiben (bisheriges Schema: „Neu gegenüber …“, „Update“,
+„Inhalt“), dann den vom Skript ausgegebenen `gh release create`-Befehl ausführen, immer mit
+`-R Matthias-Gerhards/opencode_local`. Ändert sich `opencode.jsonc` oder `LIESMICH.txt`, im Release-Text darauf
+hinweisen, dass Anwender ihre eigene `opencode.jsonc` nicht überschreiben, sondern abgleichen.
+
+**Nach jedem Release-Wechsel:** prüfen, ob `packages/cli/script/build.ts` noch `OPENCODE_TARGET`, `--outdir` und
+den Ausgabepfad `<outdir>/cli-windows-x64/bin/opencode.exe` unterstützt (Skript einmal laufen lassen).
+
+---
+
 ## Offene Punkte (noch nicht umgesetzt)
 
 Siehe Tabelle in `CLAUDE.md` – Einträge ohne ✅: Auto-Update-Code, Console/Konto, webfetch im Code,
