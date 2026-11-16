@@ -54,6 +54,11 @@ for flag in OPENCODE_DISABLE_AUTOUPDATE OPENCODE_DISABLE_FREE_MODELS OPENCODE_DI
   else echo "  FEHLT   Flag $flag kommt in packages/*/src nicht mehr vor (umbenannt?)"; fail=1; fi
 done
 
+echo "7. Windows-Distribution"
+for f in local-only/build-windows.sh local-only/Readme.md; do exists "$f"; done
+check "build.ts kennt OPENCODE_TARGET" packages/cli/script/build.ts 'process.env.OPENCODE_TARGET'
+check "build.ts kennt --outdir"        packages/cli/script/build.ts '"--outdir="'
+
 echo
 echo "Externe Hosts im Laufzeitcode (mit Tabelle in CLAUDE.md abgleichen):"
 grep -rhoE "https?://[a-zA-Z0-9.-]+" packages/*/src --include='*.ts' --include='*.tsx' 2>/dev/null \
